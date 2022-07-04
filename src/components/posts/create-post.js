@@ -9,9 +9,9 @@ const CreatePost = ({ addPost }) => {
   const [choosenImage, setChoosenImage] = useState(null);
   const [id, setId] = useState(null);
   const [url, setUrl] = useState(
-    "https://api.unsplash.com/photos/?client_id=RF5GMFuwL8xSnJ949gI5G-IDw6gj2h4RzKcqXAqn-mA"
+    "https://api.unsplash.com/photos?client_id=RF5GMFuwL8xSnJ949gI5G-IDw6gj2h4RzKcqXAqn-mA"
   );
-  const { data: images } = useFetch(url);
+  const { data: images, isPending, error } = useFetch(url);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -73,6 +73,8 @@ const CreatePost = ({ addPost }) => {
       </label>
       <label>
         <h4>Hauptbild</h4>
+        {isPending && <div>Loading.....</div>}
+        {error && <div>{error}</div>}
         {images && (
           <div className="image-list">
             {images.map((image) => {

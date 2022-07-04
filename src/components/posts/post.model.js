@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import FullScreen from "../gallery/fullScreen.js";
 
 // Images / Icons
 import menu from "../../assets/img/menu.png";
@@ -7,14 +8,17 @@ import bubble from "../../assets/img/comment.svg";
 import send from "../../assets/img/send.svg";
 import bookmark from "../../assets/img/bookmark.svg";
 import avatar from "../../assets/img/avatar.png";
+import useOutsideAlerter from "../../hooks/useOutsideAlerter";
 
 const PostModel = ({ post }) => {
   const { name, text, choosenProfile, choosenImage, id, date: postDate } = post;
   const [likes, setLikes] = useState(0);
   const [comment, setComment] = useState("");
   const [comments, setComments] = useState([]);
-  const [openMenu, setOpenMenu] = useState(false);
+  const [menuVisibility, setMenuVisibility] = useState(false);
+  const [fullscreenVisibility, setFullscreenVisibility] = useState(false);
   const [minutes, setMinutes] = useState(null);
+  const wrapperRef = useRef(null);
 
   useEffect(() => {
     let intervalID = setInterval(() => {
@@ -23,7 +27,7 @@ const PostModel = ({ post }) => {
       setMinutes(Math.floor((difference / 1000 / 60) << 0));
     }, 100);
     return () => clearInterval(intervalID);
-  }, []);
+  }, [postDate]);
 
   const handleEnter = () => {
     const newComment = {
@@ -36,46 +40,61 @@ const PostModel = ({ post }) => {
     setComment("");
   };
 
-  const handleOpen = () => {
-    setOpenMenu((prev) => !prev);
-  };
+  useOutsideAlerter(wrapperRef, setMenuVisibility);
 
   return (
-    <div key={id} className="post">
+    <div key={id} id="post" className="post">
       <section className="header">
         <div className="profile">
-          <img src={choosenProfile} />
+          <img alt="" src={choosenProfile} />
           <h3>{name}</h3>
         </div>
         <div>
-          <img className="menu" src={menu} onClick={handleOpen} />
-          {openMenu && (
-            <div className="menu-outer">
+          <img
+            className="menu"
+            alt=""
+            src={menu}
+            onClick={() => setMenuVisibility((prev) => !prev)}
+          />
+          {menuVisibility && (
+            <div ref={wrapperRef} className="menu-outer">
               <div className="menu-inner">
-                <a>Einstellungen</a>
-                <a>Zum Profil</a>
-                <a>Melden</a>
+                <button>Einstellungen</button>
+                <button>Zum Profil</button>
+                <button>Melden</button>
               </div>
             </div>
           )}
         </div>
       </section>
       <section className="image">
-        <img src={choosenImage} alt="" />
+        <img
+          src={choosenImage}
+          alt=""
+          onClick={() => setFullscreenVisibility(true)}
+        />
+        {fullscreenVisibility && (
+          <FullScreen
+            setFullscreenVisibility={setFullscreenVisibility}
+            id={id}
+          />
+        )}
       </section>
       <section className="actionbar">
         <div>
           <img
             src={like}
+            alt="like"
             onClick={() => setLikes((prevLikes) => prevLikes + 1)}
           />
           <img
             src={bubble}
+            alt="bubble"
             onClick={() => document.getElementById("input").focus()}
           />
-          <img src={send} onClick={handleEnter} />
+          <img src={send} onClick={handleEnter} alt="send" />
         </div>
-        <img src={bookmark} />
+        <img src={bookmark} alt="bookmark" />
       </section>
       <section className="likes">
         <span>{likes}</span> Likes
@@ -90,7 +109,7 @@ const PostModel = ({ post }) => {
             return (
               <div className="element" key={comment.date}>
                 <div className="avatar-outer">
-                  <img className="avatar-img" src={avatar} />
+                  <img className="avatar-img" alt="avatar" src={avatar} />
                 </div>
                 <span>{comment.text}</span>
               </div>
@@ -100,7 +119,7 @@ const PostModel = ({ post }) => {
       )}
       <section className="comment-field">
         <div className="avatar-outer">
-          <img className="avatar-img" src={avatar} />
+          <img className="avatar-img" alt="avatar" src={avatar} />
         </div>
         <input
           value={comment}
